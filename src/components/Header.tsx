@@ -1,9 +1,8 @@
 import type { Accessor } from "solid-js";
-import type { Snapshot } from "~/lib/sim/index.ts";
-import { clock, dateLabel } from "~/lib/format.ts";
+import { clock, dateLabel, weekLabel } from "~/lib/format.ts";
 
-/** Generic title bar — no company identity. Live clock, date, shift, status. */
-export function Header(props: { now: Accessor<number>; snap: Accessor<Snapshot> }) {
+/** Generic title bar — no company identity. Live clock, date, week, status. */
+export function Header(props: { now: Accessor<number> }) {
   return (
     <header class="flex items-center justify-between rounded-lg border border-border bg-card px-5 py-3">
       <div class="flex items-center gap-4">
@@ -16,8 +15,8 @@ export function Header(props: { now: Accessor<number>; snap: Accessor<Snapshot> 
           </svg>
         </div>
         <div>
-          <h1 class="text-lg font-semibold leading-tight tracking-tight">Production Control Center</h1>
-          <p class="text-xs text-muted-foreground">Live floor status · Demo board</p>
+          <h1 class="text-lg font-semibold leading-tight tracking-tight">Mission Control</h1>
+          <p class="text-xs text-muted-foreground">Live floor status · {weekLabel(props.now())}</p>
         </div>
       </div>
 
@@ -30,9 +29,7 @@ export function Header(props: { now: Accessor<number>; snap: Accessor<Snapshot> 
           <div class="font-mono text-2xl font-semibold leading-none tracking-tight">
             {clock(props.now())}
           </div>
-          <div class="mt-1 text-xs text-muted-foreground">
-            {dateLabel(props.now())} · {props.snap().shift}
-          </div>
+          <div class="mt-1 text-xs text-muted-foreground">{dateLabel(props.now())}</div>
         </div>
       </div>
     </header>

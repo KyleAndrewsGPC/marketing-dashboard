@@ -9,10 +9,8 @@ export function ActivityFeed(props: { now: Accessor<number>; snap: Accessor<Snap
     <Card title="Activity Feed" bodyClass="flex min-h-0 flex-1 flex-col gap-0.5 px-2 pb-2">
       <For each={props.snap().feed}>
         {(ev) => (
-          <div class="flex items-start gap-2.5 rounded-md px-2 py-1.5">
-            <div class="mt-1.5">
-              <StatusDot status={ev.kind} />
-            </div>
+          <div class="flex items-center gap-2.5 rounded-md px-2 py-1.5">
+            <StatusDot status={ev.kind} />
             <div class="min-w-0 flex-1">
               <div class="truncate text-[0.8rem] leading-tight">
                 <span class="font-medium text-foreground">{ev.source}</span>{" "}

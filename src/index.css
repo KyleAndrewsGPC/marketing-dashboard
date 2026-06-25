@@ -49,10 +49,9 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Zero-interaction kiosk: kill text selection and the cursor entirely. */
+  /* Zero-interaction kiosk: nothing is selectable (the cursor stays visible). */
   * {
     user-select: none;
-    cursor: none;
   }
 }
 

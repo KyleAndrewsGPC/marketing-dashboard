@@ -20,6 +20,29 @@ export function clock(now: number): string {
   });
 }
 
+/**
+ * ISO-8601 week label: "W{week}-{yy}", e.g. the first week of 2026 → "W01-26".
+ * Uses the ISO week-year so the year is correct across the Jan 1 boundary.
+ */
+export function weekLabel(now: number): string {
+  const date = new Date(now);
+  // Shift to the Thursday of this week (ISO weeks are Thursday-anchored).
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = (d.getUTCDay() + 6) % 7; // Mon=0 … Sun=6
+  d.setUTCDate(d.getUTCDate() - dayNum + 3);
+  const isoYear = d.getUTCFullYear();
+
+  // Thursday of ISO week 1 is the Thursday in the week containing Jan 4.
+  const week1Thursday = new Date(Date.UTC(isoYear, 0, 4));
+  const week1DayNum = (week1Thursday.getUTCDay() + 6) % 7;
+  week1Thursday.setUTCDate(week1Thursday.getUTCDate() - week1DayNum + 3);
+
+  const week = 1 + Math.round((d.getTime() - week1Thursday.getTime()) / 604_800_000);
+  const wk = String(week).padStart(2, "0");
+  const yy = String(isoYear % 100).padStart(2, "0");
+  return `W${wk}-${yy}`;
+}
+
 export function dateLabel(now: number): string {
   return new Date(now).toLocaleDateString("en-US", {
     weekday: "long",
