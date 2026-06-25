@@ -103,14 +103,14 @@ export interface ClientDef {
 
 export const CLIENTS: readonly ClientDef[] = [
   { codename: "Atlas", weight: 6, jobs: ["weekly_tags", "sign_kit", "coupons", "strips", "price_import"] },
-  { codename: "Northwind", weight: 5, jobs: ["weekly_processing", "planogram", "coupons", "sign_kit", "price_import"] },
-  { codename: "Meridian", weight: 3, jobs: ["weekly_tags", "coupons", "service_case"] },
-  { codename: "Cedar", weight: 3, jobs: ["weekly_tags", "coupons", "strips", "sign_kit"] },
-  { codename: "Harbor", weight: 2, jobs: ["weekly_processing", "service_case"] },
-  { codename: "Cardinal", weight: 2, jobs: ["weekly_tags", "coupons"] },
-  { codename: "Beacon", weight: 2, jobs: ["monthly_kit"] },
-  { codename: "Vantage", weight: 1, jobs: ["price_import", "strips"] },
-  { codename: "Summit", weight: 1, jobs: ["weekly_tags"] },
+  { codename: "Helios", weight: 5, jobs: ["weekly_processing", "planogram", "coupons", "sign_kit", "price_import"] },
+  { codename: "Athena", weight: 3, jobs: ["weekly_tags", "coupons", "service_case"] },
+  { codename: "Hermes", weight: 3, jobs: ["weekly_tags", "coupons", "strips", "sign_kit"] },
+  { codename: "Orion", weight: 2, jobs: ["weekly_processing", "service_case"] },
+  { codename: "Apollo", weight: 2, jobs: ["weekly_tags", "coupons"] },
+  { codename: "Selene", weight: 2, jobs: ["monthly_kit"] },
+  { codename: "Hera", weight: 1, jobs: ["price_import", "strips"] },
+  { codename: "Theseus", weight: 1, jobs: ["weekly_tags"] },
 ];
 
 /** Pre-expanded weighted client index pool for cheap weighted picks. */
