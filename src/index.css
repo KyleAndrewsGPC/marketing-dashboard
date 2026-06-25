@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * shadcn-inspired dark design tokens. HSL channel triplets so Tailwind's
+   * `<alpha-value>` opacity modifiers work (e.g. bg-card/50).
+   */
+  :root {
+    --background: 0 0% 4%; /* near-black neutral */
+    --foreground: 0 0% 96%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 96%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 56%;
+
+    --border: 0 0% 16%;
+    --accent: 217 91% 60%;
+
+    /* Status color language */
+    --running: 142 71% 45%; /* green  */
+    --setup: 38 92% 50%; /* amber  */
+    --maintenance: 217 91% 60%; /* blue   */
+    --idle: 0 0% 45%; /* muted  */
+
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    /* Kiosk: this board owns the whole viewport and never scrolls. */
+    margin: 0;
+    overflow: hidden;
+    /* Tabular numerals everywhere so live-updating figures don't jitter. */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Zero-interaction kiosk: kill text selection and the cursor entirely. */
+  * {
+    user-select: none;
+    cursor: none;
+  }
+}
+
+@layer components {
+  /* A subtle pulsing dot used for "live" status indicators. */
+  .pulse-dot {
+    animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
