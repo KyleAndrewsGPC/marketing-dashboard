@@ -55,8 +55,9 @@ export function snapshot(now: number): Snapshot {
 
   const kpis: Kpis = {
     signs: signCount.total,
-    printFiles: cumulative("printFiles"),
+    strips: cumulative("strips"),
     records: cumulative("records"),
+    esls: cumulative("esls"),
     jobsDone: cumulative("jobsDone"),
     onTimePct,
     activeJobs,
@@ -144,9 +145,10 @@ function buildTicker(
   const onTimeAvg = Math.round(rng(FIXED_SEED, weekStart, "wtd-ontime").range(97.8, 99.1) * 10) / 10;
 
   return [
-    { label: "WTD Signs", value: fmt(wtd("signs", todayKpis.signs)) },
-    { label: "WTD Print Files", value: fmt(wtd("printFiles", todayKpis.printFiles)) },
+    { label: "WTD Tags / Signs", value: fmt(wtd("signs", todayKpis.signs)) },
+    { label: "WTD Strips", value: fmt(wtd("strips", todayKpis.strips)) },
     { label: "WTD Records", value: fmt(wtd("records", todayKpis.records)) },
+    { label: "WTD ESLs", value: fmt(wtd("esls", todayKpis.esls)) },
     { label: "WTD Jobs", value: fmt(wtd("jobsDone", todayKpis.jobsDone)) },
     { label: "WTD On-Time", value: `${onTimeAvg}%` },
     { label: "Lanes Active", value: `${todayKpis.activeJobs}/${todayKpis.totalLanes}` },

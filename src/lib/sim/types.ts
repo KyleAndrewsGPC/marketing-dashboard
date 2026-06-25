@@ -27,12 +27,14 @@ export interface ClientJob {
 }
 
 export interface Kpis {
-  /** Signs generated today (= sign-count panel total). */
+  /** Tags / signs generated today (= sign-count panel total). */
   signs: number;
-  /** Print files produced today. */
-  printFiles: number;
+  /** Shelf strips produced today. */
+  strips: number;
   /** Data records processed today. */
   records: number;
+  /** Electronic shelf labels published today. */
+  esls: number;
   /** Jobs completed today. */
   jobsDone: number;
   onTimePct: number;

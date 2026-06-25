@@ -14,12 +14,12 @@ export function KpiRow(props: { snap: Accessor<Snapshot> }) {
   const kpis = (): Kpi[] => {
     const k = props.snap().kpis;
     return [
-      { label: "Signs Today", value: int(k.signs), hint: "generated" },
-      { label: "Print Files", value: int(k.printFiles), hint: "produced" },
+      { label: "Tags / Signs", value: int(k.signs), hint: "generated" },
+      { label: "Strips", value: int(k.strips), hint: "produced" },
       { label: "Records", value: int(k.records), hint: "processed" },
+      { label: "ESLs", value: int(k.esls), hint: "published" },
       { label: "Jobs Done", value: int(k.jobsDone), hint: "today" },
       { label: "On-Time", value: `${k.onTimePct.toFixed(1)}%`, hint: "rolling", accent: true },
-      { label: "Lanes Active", value: `${k.activeJobs}/${k.totalLanes}`, hint: "running" },
     ];
   };
 

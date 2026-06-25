@@ -188,7 +188,10 @@ export const SUBSTRATES: readonly string[] = [
  */
 export const DAILY_TARGETS = {
   signs: SIGN_TOTAL,
-  printFiles: 42_000,
+  strips: 42_000,
   records: 3_200_000,
+  // Electronic shelf labels — a newer line the business is expanding into,
+  // so volumes are modest next to the print metrics.
+  esls: 3_800,
   jobsDone: 540,
 };
