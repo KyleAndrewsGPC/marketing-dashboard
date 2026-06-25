@@ -3,9 +3,9 @@ import { createClock } from "~/lib/clock.ts";
 import { snapshot } from "~/lib/sim/index.ts";
 import { Header } from "~/components/Header.tsx";
 import { KpiRow } from "~/components/KpiRow.tsx";
-import { ProductionLines } from "~/components/ProductionLines.tsx";
+import { ActiveJobs } from "~/components/ActiveJobs.tsx";
 import { ThroughputChart } from "~/components/ThroughputChart.tsx";
-import { DataPipeline } from "~/components/DataPipeline.tsx";
+import { SignCount } from "~/components/SignCount.tsx";
 import { ActivityFeed } from "~/components/ActivityFeed.tsx";
 import { Ticker } from "~/components/Ticker.tsx";
 
@@ -23,15 +23,15 @@ const App: Component = () => {
       <KpiRow snap={snap} />
 
       <main class="grid min-h-0 grid-cols-[3fr_2fr] gap-3">
-        {/* Left: production lines over throughput chart */}
+        {/* Left: active client jobs over throughput chart */}
         <div class="grid min-h-0 grid-rows-[1fr_minmax(0,38%)] gap-3">
-          <ProductionLines snap={snap} />
+          <ActiveJobs snap={snap} />
           <ThroughputChart snap={snap} />
         </div>
 
-        {/* Right: data pipeline over activity feed */}
-        <div class="grid min-h-0 grid-rows-[auto_1fr] gap-3">
-          <DataPipeline snap={snap} />
+        {/* Right: sign count over activity feed */}
+        <div class="grid min-h-0 grid-rows-[minmax(0,46%)_1fr] gap-3">
+          <SignCount snap={snap} />
           <ActivityFeed now={now} snap={snap} />
         </div>
       </main>

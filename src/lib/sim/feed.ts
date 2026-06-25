@@ -1,97 +1,59 @@
-import { rng } from "./prng.ts";
-import {
-  CUSTOMERS,
-  LINE_DEFS,
-  PROGRAMS,
-  PIPELINE_STAGES,
-  INGEST_SOURCES,
-  SUBSTRATES,
-} from "./content.ts";
+import { rng, type Rng } from "./prng.ts";
+import { INGEST_SOURCES, SIGN_SIZES, SUBSTRATES, pickClientJob } from "./content.ts";
 import type { EventKind, FeedEvent } from "./types.ts";
 
 const SEC = 1000;
 
-const PRESSES = ["Press 1", "Press 2", "Press 3", "Press 4"] as const;
-
-/** Short source label for a randomly-picked line ("Press 2", "Finishing"). */
-function lineSource(r: ReturnType<typeof rng>): string {
-  return r.pick(LINE_DEFS).name.split(" · ")[0];
-}
+const sizeCode = (r: Rng) => r.pick(SIGN_SIZES).code;
 
 interface Template {
   kind: EventKind;
   /** Relative likelihood. Healthy events common; warn/maintenance occasional. */
   weight: number;
-  build: (r: ReturnType<typeof rng>) => { source: string; message: string };
+  build: (r: Rng) => { source: string; message: string };
 }
 
 /*
- * A broad vocabulary spanning the whole workflow — intake, prepress, press,
- * finishing, dispatch, QC, data. Each template also varies internally (numbers,
- * customers, programs, presses, substrates), so the effective space of distinct
- * messages is large enough that the feed never reads as a short loop, even when
- * the board runs unattended all day. Weights keep the tone calm: mostly routine
- * "info"/"running" events, with warnings and maintenance as occasional color.
+ * A broad vocabulary spanning the whole automated workflow — intake, data
+ * prep, file generation, output, stats, dispatch, QC — phrased in the client /
+ * job-type / sign-size language the rest of the board uses. Each template also
+ * varies internally (clients, job types, sizes, counts), so the effective
+ * space of distinct messages stays large enough that the feed never reads as a
+ * short loop, even running unattended all day. Weights keep the tone calm:
+ * mostly routine activity, with warnings and maintenance as occasional color.
  */
 const TEMPLATES: readonly Template[] = [
-  // ---- Press / run lifecycle (running) ----
+  // ---- Job lifecycle (running) ----
   {
     kind: "running",
     weight: 5,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Run started · WO-${r.int(1000, 9999)} (${r.pick(CUSTOMERS)})`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: j.client, message: `${j.jobLabel} started` };
+    },
+  },
+  {
+    kind: "running",
+    weight: 4,
+    build: (r) => {
+      const j = pickClientJob(r);
+      const qty = r.int(2, 240) * 1000;
+      return { source: j.client, message: `${j.jobLabel} finished · ${qty.toLocaleString()} signs` };
+    },
   },
   {
     kind: "running",
     weight: 3,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Up to speed · ${r.pick(PROGRAMS)}`,
-    }),
-  },
-  {
-    kind: "running",
-    weight: 2,
-    build: (r) => ({
-      source: "Proofing",
-      message: `Proof approved · batch ${r.int(100, 999)}`,
-    }),
-  },
-  {
-    kind: "running",
-    weight: 2,
-    build: (r) => ({
-      source: "Proofing",
-      message: `Color OK'd · ${r.pick(CUSTOMERS)} · ΔE ${r.range(0.2, 1.6).toFixed(2)}`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: j.client, message: `${j.jobLabel} · routed to output · ${r.int(2, 12)} batches` };
+    },
   },
 
   // ---- Routine throughput (info) ----
   {
     kind: "info",
     weight: 4,
-    build: (r) => {
-      const line = r.pick(LINE_DEFS);
-      const qty = r.int(2, 18) * 1000;
-      return {
-        source: line.name.split(" · ")[0],
-        message: `Run complete · ${qty.toLocaleString()} ${line.unit} · ${r.pick(PROGRAMS)}`,
-      };
-    },
-  },
-  {
-    kind: "info",
-    weight: 3,
-    build: (r) => ({
-      source: "Composition",
-      message: `${r.int(3, 24)} layouts auto-composed · ${r.pick(CUSTOMERS)}`,
-    }),
-  },
-  {
-    kind: "info",
-    weight: 3,
     build: (r) => ({
       source: "Ingest",
       message: `${r.int(2, 40)} files received · ${r.pick(INGEST_SOURCES)}`,
@@ -100,34 +62,42 @@ const TEMPLATES: readonly Template[] = [
   {
     kind: "info",
     weight: 3,
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: "Ingest", message: `${j.jobLabel} imported · ${r.int(40, 1800).toLocaleString()} SKUs · ${j.client}` };
+    },
+  },
+  {
+    kind: "info",
+    weight: 3,
     build: (r) => ({
-      source: "Ingest",
-      message: `${r.pick(PROGRAMS)} imported · ${r.int(40, 1800).toLocaleString()} SKUs`,
+      source: "Output",
+      message: `${sizeCode(r)} print files generated · ${r.int(200, 9000).toLocaleString()}`,
     }),
   },
   {
     kind: "info",
-    weight: 2,
-    build: (r) => ({
-      source: "Release",
-      message: `Batch released to ${r.pick(PRESSES)} · ${r.int(4, 40)} plates`,
-    }),
+    weight: 3,
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: "Prepress", message: `${r.int(3, 24)} layouts composed · ${j.client}` };
+    },
   },
   {
     kind: "info",
     weight: 2,
-    build: (r) => ({
-      source: "Dispatch",
-      message: `Shipment staged · ${r.int(2, 24)} cartons · ${r.pick(CUSTOMERS)}`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: "Stats", message: `Stats built · ${j.client} ${j.jobLabel}` };
+    },
   },
   {
     kind: "info",
     weight: 2,
-    build: (r) => ({
-      source: "Dispatch",
-      message: `Pickup scheduled · ${r.int(1, 8)} skids`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: "Dispatch", message: `Shipment staged · ${r.int(2, 24)} cartons · ${j.client}` };
+    },
   },
   {
     kind: "info",
@@ -147,61 +117,37 @@ const TEMPLATES: readonly Template[] = [
   },
   {
     kind: "info",
-    weight: 2,
+    weight: 1,
     build: (r) => ({
-      source: lineSource(r),
-      message: `Plates output · ${r.int(4, 32)} · ${r.pick(PRESSES)}`,
+      source: "Output",
+      message: `Throughput steady · ${r.int(800, 2400)} files/min`,
     }),
   },
   {
     kind: "info",
     weight: 1,
     build: (r) => ({
-      source: r.pick(PIPELINE_STAGES),
-      message: `Throughput steady · ${r.int(800, 2400)} records/min`,
-    }),
-  },
-  {
-    kind: "info",
-    weight: 1,
-    build: (r) => ({
-      source: "Proofing",
-      message: `Proof sent to client · ${r.pick(CUSTOMERS)}`,
-    }),
-  },
-  {
-    kind: "info",
-    weight: 1,
-    build: (r) => ({
-      source: lineSource(r),
+      source: "Dispatch",
       message: `Roll change · ${r.pick(SUBSTRATES)}`,
     }),
   },
 
-  // ---- Make-ready / setup ----
+  // ---- Queue / setup ----
   {
     kind: "setup",
     weight: 3,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Make-ready started · ${r.pick(PROGRAMS)}`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: j.client, message: `${j.jobLabel} queued` };
+    },
   },
   {
     kind: "setup",
     weight: 1,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Plate mount · WO-${r.int(1000, 9999)}`,
-    }),
-  },
-  {
-    kind: "setup",
-    weight: 1,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Color calibration · ${r.pick(PRESSES)}`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: "Prepress", message: `Batching · ${j.client} ${j.jobLabel}` };
+    },
   },
 
   // ---- Warnings (occasional, auto-resolved so the board reads healthy) ----
@@ -216,26 +162,18 @@ const TEMPLATES: readonly Template[] = [
   {
     kind: "warn",
     weight: 1,
-    build: (r) => ({
-      source: "Preflight",
-      message: `Low-res image replaced · ${r.pick(CUSTOMERS)}`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: "Preflight", message: `Low-res image replaced · ${j.client}` };
+    },
   },
   {
     kind: "warn",
     weight: 1,
-    build: (r) => ({
-      source: "Preflight",
-      message: `Font substituted · ${r.int(1, 4)} files`,
-    }),
-  },
-  {
-    kind: "warn",
-    weight: 1,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Registration adjusted · ${r.pick(PRESSES)}`,
-    }),
+    build: (r) => {
+      const j = pickClientJob(r);
+      return { source: j.client, message: `${j.jobLabel} held for review` };
+    },
   },
 
   // ---- Maintenance ----
@@ -243,16 +181,8 @@ const TEMPLATES: readonly Template[] = [
     kind: "maintenance",
     weight: 1,
     build: (r) => ({
-      source: lineSource(r),
+      source: "Output",
       message: `Scheduled maintenance · ${r.int(20, 55)} min`,
-    }),
-  },
-  {
-    kind: "maintenance",
-    weight: 1,
-    build: (r) => ({
-      source: lineSource(r),
-      message: `Blanket wash · ${r.pick(PRESSES)}`,
     }),
   },
 ];
@@ -260,7 +190,7 @@ const TEMPLATES: readonly Template[] = [
 const TOTAL_WEIGHT = TEMPLATES.reduce((sum, t) => sum + t.weight, 0);
 
 /** Weighted template pick using one draw from the bucket's PRNG. */
-function pickTemplate(r: ReturnType<typeof rng>): Template {
+function pickTemplate(r: Rng): Template {
   let x = r.next() * TOTAL_WEIGHT;
   for (const t of TEMPLATES) {
     x -= t.weight;
@@ -274,7 +204,7 @@ function pickTemplate(r: ReturnType<typeof rng>): Template {
  * time buckets over a trailing window; each bucket may emit an event seeded by
  * its own start time. As `now` advances, fresh buckets appear at the top — so
  * the feed grows live without any persisted state. An adjacent-duplicate guard
- * keeps the same line from ever stacking twice in a row.
+ * keeps the same source+message from ever stacking twice in a row.
  */
 export function buildFeed(daySeed: number, now: number, limit = 12): FeedEvent[] {
   const bucket = 35 * SEC;
@@ -288,15 +218,12 @@ export function buildFeed(daySeed: number, now: number, limit = 12): FeedEvent[]
     if (!r.chance(0.34)) continue;
     const tpl = pickTemplate(r);
     const { source, message } = tpl.build(r);
-    // Jitter the displayed time within the bucket, but never past `now`.
     const time = Math.min(now, t + Math.floor(r.next() * bucket));
     events.push({ time, source, message, kind: tpl.kind });
   }
 
   events.sort((a, b) => b.time - a.time);
 
-  // Drop a run of identical lines (same source + message) so nothing repeats
-  // back-to-back on screen.
   const deduped: FeedEvent[] = [];
   for (const ev of events) {
     const prev = deduped[deduped.length - 1];

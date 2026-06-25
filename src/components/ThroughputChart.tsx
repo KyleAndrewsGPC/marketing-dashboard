@@ -6,11 +6,11 @@ import { compact } from "~/lib/format.ts";
 /** Output-by-hour bars for the current production day, filling as it proceeds. */
 export function ThroughputChart(props: { snap: Accessor<Snapshot> }) {
   const peak = () => props.snap().throughputPeak || 1;
-  const dayTotal = () => props.snap().kpis.priceStrips;
+  const dayTotal = () => props.snap().kpis.signs;
 
   return (
     <Card
-      title="Throughput · Price Strips / Hour"
+      title="Throughput · Signs / Hour"
       accessory={
         <span class="font-mono text-[0.7rem] text-muted-foreground">
           {compact(dayTotal())} today

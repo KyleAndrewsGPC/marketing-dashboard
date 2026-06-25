@@ -1,59 +1,58 @@
 /** Status color language from the README. */
 export type LineStatus = "running" | "setup" | "maintenance" | "idle";
 
-export interface WorkOrder {
-  /** Generic, safe work-order id (e.g. "WO-4821"). */
-  id: string;
-  /** Generic customer descriptor — never a real name. */
-  customer: string;
-  /** Generic program / job type. */
-  program: string;
-}
+/** Live state of a client job as it advances through its stages. */
+export type JobStatus = "running" | "queued" | "review" | "done";
 
-export interface ProductionLine {
-  id: string;
-  name: string;
-  /** "Press" | "Finishing" — informational label. */
-  kind: string;
-  status: LineStatus;
-  order: WorkOrder | null;
-  /** 0..1 progress through the current run. */
-  progress: number;
-  /** Output rate, units/hour, for the current run. */
-  speed: number;
-  /** Human label for the unit being produced ("strips", "signs"). */
-  unit: string;
-  /** Minutes remaining on the current run (null when idle). */
+export interface ClientJob {
+  /** Stable processing-lane id (e.g. "LN1"). */
+  laneId: string;
+  /** Client codename — an arbitrary, configurable label (never a real name). */
+  client: string;
+  /** Job-type label, e.g. "Sign Kit". */
+  jobLabel: string;
+  /** Full ordered stage list for this job type. */
+  stages: readonly string[];
+  /** Index of the current stage within `stages`. */
+  stageIndex: number;
+  /** 0..1 progress within the current stage. */
+  stageProgress: number;
+  /** 0..1 progress across the whole job. */
+  overallProgress: number;
+  /** Live sub-status line, e.g. "Generating print files · 6 of 9". */
+  detail: string;
+  status: JobStatus;
+  /** Minutes remaining until the job finishes (null when not running). */
   etaMinutes: number | null;
 }
 
 export interface Kpis {
-  priceStrips: number;
-  popSigns: number;
-  impressions: number;
-  dataRecords: number;
+  /** Signs generated today (= sign-count panel total). */
+  signs: number;
+  /** Print files produced today. */
+  printFiles: number;
+  /** Data records processed today. */
+  records: number;
+  /** Jobs completed today. */
+  jobsDone: number;
   onTimePct: number;
-  activeLines: number;
-  totalLines: number;
+  /** Lanes currently running a job. */
+  activeJobs: number;
+  totalLanes: number;
 }
 
-export interface PipelineStage {
-  name: string;
-  /** Records currently in this stage (WIP). */
-  wip: number;
-  /** Records/min flowing through. */
-  ratePerMin: number;
-  /** Cumulative records processed today. */
-  processedToday: number;
+/** One row of the Sign Count panel. */
+export interface SignCountRow {
+  code: string;
+  /** Cumulative count produced so far today. */
+  count: number;
+  /** Always trending up while the day accumulates. */
+  trend: "up" | "flat";
 }
 
-export interface DataPipeline {
-  stages: PipelineStage[];
-  /** Records/min entering the funnel right now. */
-  recordsPerMin: number;
-  /** Exception rate, percent. */
-  exceptionRate: number;
-  totalProcessedToday: number;
+export interface SignCount {
+  rows: SignCountRow[];
+  total: number;
 }
 
 export type EventKind = "running" | "setup" | "maintenance" | "info" | "warn";
@@ -82,7 +81,7 @@ export interface TickerStat {
   value: string;
 }
 
-/** Headline floor health, derived from the live line states. */
+/** Headline floor health, derived from the live job states. */
 export type FloorStatusKind = "ok" | "maintenance" | "idle";
 export interface FloorStatus {
   kind: FloorStatusKind;
@@ -94,11 +93,11 @@ export interface Snapshot {
   now: number;
   shift: string;
   kpis: Kpis;
-  lines: ProductionLine[];
+  jobs: ClientJob[];
   throughput: ThroughputBar[];
   /** Peak hourly value across the day's curve — for chart scaling. */
   throughputPeak: number;
-  pipeline: DataPipeline;
+  signCount: SignCount;
   feed: FeedEvent[];
   ticker: TickerStat[];
   floorStatus: FloorStatus;

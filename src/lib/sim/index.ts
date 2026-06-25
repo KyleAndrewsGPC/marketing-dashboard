@@ -1,13 +1,13 @@
 import { hashSeed, rng } from "./prng.ts";
-import { areaUpTo, BASE_CURVE, dayContext, shiftName, weightAt } from "./time.ts";
-import { buildLines } from "./lines.ts";
+import { areaUpTo, BASE_CURVE, dayContext, shiftName } from "./time.ts";
+import { buildJobs } from "./jobs.ts";
+import { buildSignCount } from "./signcount.ts";
 import { buildFeed } from "./feed.ts";
-import { DAILY_TARGETS, FIXED_SEED, PIPELINE_STAGES } from "./content.ts";
+import { DAILY_TARGETS, FIXED_SEED } from "./content.ts";
 import type {
-  DataPipeline,
+  ClientJob,
   FloorStatus,
   Kpis,
-  ProductionLine,
   Snapshot,
   ThroughputBar,
   TickerStat,
@@ -28,9 +28,6 @@ function dayWeights(dayNumber: number): number[] {
   return BASE_CURVE.map((w) => w * r.range(0.88, 1.12));
 }
 
-/** Stage attrition through the data funnel (small losses to exceptions). */
-const STAGE_FACTORS: readonly number[] = [1.0, 0.992, 0.985, 0.978, 0.97];
-
 export function snapshot(now: number): Snapshot {
   const ctx = dayContext(now);
   const { dayNumber, dayStart, hoursElapsed } = ctx;
@@ -45,32 +42,31 @@ export function snapshot(now: number): Snapshot {
   const cumulative = (m: MetricKey) =>
     Math.round(DAILY_TARGETS[m] * dayFactor(dayNumber, m) * areaFrac);
 
-  // Instantaneous rate, units/hour, = d/dt of the cumulative curve.
-  const ratePerHour = (m: MetricKey) =>
-    (DAILY_TARGETS[m] * dayFactor(dayNumber, m) * weightAt(weights, hoursElapsed)) / fullArea;
+  // ---- Sign Count panel (authoritative source for "signs today") ----
+  const signCount = buildSignCount(daySeed, areaFrac);
 
-  const lines = buildLines(daySeed, dayStart, now);
-  const activeLines = lines.filter((l) => l.status === "running").length;
+  // ---- Active client jobs across the processing lanes ----
+  const jobs = buildJobs(daySeed, dayStart, now);
+  const activeJobs = jobs.filter((j) => j.status === "running").length;
 
   // ---- On-time %: stable per-day baseline with a gentle live drift ----
   const onTimeBase = rng(daySeed, "ontime").range(97.2, 99.6);
-  const onTimePct =
-    Math.round((onTimeBase + 0.25 * Math.sin(now / 90_000)) * 10) / 10;
+  const onTimePct = Math.round((onTimeBase + 0.25 * Math.sin(now / 90_000)) * 10) / 10;
 
   const kpis: Kpis = {
-    priceStrips: cumulative("priceStrips"),
-    popSigns: cumulative("popSigns"),
-    impressions: cumulative("impressions"),
-    dataRecords: cumulative("dataRecords"),
+    signs: signCount.total,
+    printFiles: cumulative("printFiles"),
+    records: cumulative("records"),
+    jobsDone: cumulative("jobsDone"),
     onTimePct,
-    activeLines,
-    totalLines: lines.length,
+    activeJobs,
+    totalLanes: jobs.length,
   };
 
-  // ---- Throughput-by-hour (price strips), with projected full-day bars ----
-  const stripsTarget = DAILY_TARGETS.priceStrips * dayFactor(dayNumber, "priceStrips");
+  // ---- Throughput-by-hour (signs), with projected full-day bars ----
+  const signsTarget = DAILY_TARGETS.signs * dayFactor(dayNumber, "signs");
   const perHourProjected = (h: number) =>
-    (stripsTarget * (areaUpTo(weights, h + 1) - areaUpTo(weights, h))) / fullArea;
+    (signsTarget * (areaUpTo(weights, h + 1) - areaUpTo(weights, h))) / fullArea;
 
   const throughput: ThroughputBar[] = [];
   let throughputPeak = 0;
@@ -80,7 +76,7 @@ export function snapshot(now: number): Snapshot {
     throughputPeak = Math.max(throughputPeak, projected);
     const upper = Math.min(h + 1, hoursElapsed);
     const actual =
-      upper > h ? (stripsTarget * (areaUpTo(weights, upper) - areaUpTo(weights, h))) / fullArea : 0;
+      upper > h ? (signsTarget * (areaUpTo(weights, upper) - areaUpTo(weights, h))) / fullArea : 0;
     throughput.push({
       hour: h,
       value: Math.round(actual),
@@ -89,30 +85,8 @@ export function snapshot(now: number): Snapshot {
     });
   }
 
-  // ---- Data pipeline funnel ----
-  const recordsPerMin = ratePerHour("dataRecords") / 60;
-  const exceptionRate = Math.round(rng(daySeed, "exc").range(0.4, 1.2) * 100) / 100;
-  const dataCum = cumulative("dataRecords");
-  const stages = PIPELINE_STAGES.map((name, i) => {
-    const f = STAGE_FACTORS[i];
-    const stageRate = recordsPerMin * f;
-    return {
-      name,
-      ratePerMin: Math.round(stageRate),
-      processedToday: Math.round(dataCum * f),
-      // Work-in-progress ≈ a fraction of a minute of flow held in the stage.
-      wip: Math.round(stageRate * rng(daySeed, "wip", i).range(0.6, 1.8)),
-    };
-  });
-  const pipeline: DataPipeline = {
-    stages,
-    recordsPerMin: Math.round(recordsPerMin),
-    exceptionRate,
-    totalProcessedToday: dataCum,
-  };
-
-  // ---- Floor health, derived from live line states ----
-  const floorStatus = deriveFloorStatus(lines, activeLines);
+  // ---- Floor health, derived from the live job states ----
+  const floorStatus = deriveFloorStatus(jobs, activeJobs);
 
   // ---- Week-to-date ticker ----
   const ticker = buildTicker(ctx, kpis, floorStatus);
@@ -121,10 +95,10 @@ export function snapshot(now: number): Snapshot {
     now,
     shift: shiftName(new Date(now).getHours()),
     kpis,
-    lines,
+    jobs,
     throughput,
     throughputPeak,
-    pipeline,
+    signCount,
     feed: buildFeed(daySeed, now),
     ticker,
     floorStatus,
@@ -132,18 +106,18 @@ export function snapshot(now: number): Snapshot {
 }
 
 /**
- * Summarize the floor for the header pill / ticker. Maintenance on any line
- * surfaces first; an all-idle floor (overnight) reads as idle; otherwise the
- * board is operational. Because it tracks the live line states, the headline
- * shifts naturally through the day rather than sitting on one fixed string.
+ * Summarize the floor for the header pill / ticker. A job held for review
+ * surfaces first; an all-quiet floor reads as idle; otherwise the board is
+ * operational. Because it tracks the live job states, the headline shifts
+ * naturally through the day rather than sitting on one fixed string.
  */
-function deriveFloorStatus(lines: ProductionLine[], activeLines: number): FloorStatus {
-  const maint = lines.filter((l) => l.status === "maintenance").length;
-  if (maint > 0) {
-    return { kind: "maintenance", label: `Maintenance · ${maint} line${maint > 1 ? "s" : ""}` };
+function deriveFloorStatus(jobs: ClientJob[], activeJobs: number): FloorStatus {
+  const inReview = jobs.filter((j) => j.status === "review").length;
+  if (inReview > 0) {
+    return { kind: "maintenance", label: `${inReview} job${inReview > 1 ? "s" : ""} in review` };
   }
-  if (activeLines === 0) {
-    return { kind: "idle", label: "Lines idle" };
+  if (activeJobs === 0) {
+    return { kind: "idle", label: "Lanes idle" };
   }
   return { kind: "ok", label: "All systems operational" };
 }
@@ -170,12 +144,12 @@ function buildTicker(
   const onTimeAvg = Math.round(rng(FIXED_SEED, weekStart, "wtd-ontime").range(97.8, 99.1) * 10) / 10;
 
   return [
-    { label: "WTD Price Strips", value: fmt(wtd("priceStrips", todayKpis.priceStrips)) },
-    { label: "WTD POP Signs", value: fmt(wtd("popSigns", todayKpis.popSigns)) },
-    { label: "WTD Impressions", value: fmt(wtd("impressions", todayKpis.impressions)) },
-    { label: "WTD Data Records", value: fmt(wtd("dataRecords", todayKpis.dataRecords)) },
+    { label: "WTD Signs", value: fmt(wtd("signs", todayKpis.signs)) },
+    { label: "WTD Print Files", value: fmt(wtd("printFiles", todayKpis.printFiles)) },
+    { label: "WTD Records", value: fmt(wtd("records", todayKpis.records)) },
+    { label: "WTD Jobs", value: fmt(wtd("jobsDone", todayKpis.jobsDone)) },
     { label: "WTD On-Time", value: `${onTimeAvg}%` },
-    { label: "Lines Online", value: `${todayKpis.activeLines}/${todayKpis.totalLines}` },
+    { label: "Lanes Active", value: `${todayKpis.activeJobs}/${todayKpis.totalLanes}` },
     { label: "Floor Status", value: floorStatus.label },
   ];
 }

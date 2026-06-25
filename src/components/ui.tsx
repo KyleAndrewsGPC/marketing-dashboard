@@ -1,19 +1,25 @@
 import type { JSX } from "solid-js";
 import { Show } from "solid-js";
-import type { LineStatus, EventKind } from "~/lib/sim/types.ts";
+import type { LineStatus, EventKind, JobStatus } from "~/lib/sim/types.ts";
 
-/** Tailwind text-color class for a line/event status. */
-export function statusColor(status: LineStatus | EventKind): string {
+type AnyStatus = LineStatus | EventKind | JobStatus;
+
+/** Tailwind text-color class for a line/job/event status. */
+export function statusColor(status: AnyStatus): string {
   switch (status) {
     case "running":
       return "text-running";
     case "setup":
       return "text-setup";
     case "maintenance":
+    case "review":
       return "text-maintenance";
     case "warn":
       return "text-setup";
+    case "done":
+      return "text-accent";
     case "idle":
+    case "queued":
       return "text-idle";
     default:
       return "text-muted-foreground";
@@ -21,33 +27,37 @@ export function statusColor(status: LineStatus | EventKind): string {
 }
 
 /** Tailwind bg-color class for the same. */
-export function statusBg(status: LineStatus | EventKind): string {
+export function statusBg(status: AnyStatus): string {
   switch (status) {
     case "running":
       return "bg-running";
     case "setup":
       return "bg-setup";
     case "maintenance":
+    case "review":
       return "bg-maintenance";
     case "warn":
       return "bg-setup";
+    case "done":
+      return "bg-accent";
     case "idle":
+    case "queued":
       return "bg-idle";
     default:
       return "bg-muted-foreground";
   }
 }
 
-export function statusLabel(status: LineStatus): string {
+export function jobStatusLabel(status: JobStatus): string {
   switch (status) {
     case "running":
       return "Running";
-    case "setup":
-      return "Make-ready";
-    case "maintenance":
-      return "Maintenance";
-    case "idle":
-      return "Idle";
+    case "queued":
+      return "Queued";
+    case "review":
+      return "In review";
+    case "done":
+      return "Finished";
   }
 }
 
@@ -73,7 +83,7 @@ export function VelosMark(props: { class?: string }) {
 }
 
 /** A small status dot; pulses when the line is actively running. */
-export function StatusDot(props: { status: LineStatus | EventKind; pulse?: boolean }) {
+export function StatusDot(props: { status: AnyStatus; pulse?: boolean }) {
   return (
     <span
       class={`inline-block h-2 w-2 shrink-0 rounded-full ${statusBg(props.status)} ${
