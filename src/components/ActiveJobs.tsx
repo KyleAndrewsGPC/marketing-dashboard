@@ -34,7 +34,11 @@ function JobRow(props: { job: ClientJob }) {
       <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div
           class={`h-full rounded-full transition-[width] duration-1000 ease-linear ${
-            running() ? "bg-running" : j().status === "review" ? "bg-maintenance" : "bg-idle"
+            running()
+              ? "bg-running bar-stripes"
+              : j().status === "review"
+                ? "bg-maintenance"
+                : "bg-idle"
           }`}
           style={{ width: `${Math.round(j().overallProgress * 100)}%` }}
         />

@@ -77,4 +77,53 @@
       opacity: 0.35;
     }
   }
+
+  /*
+   * Forward-slanted "barber pole" stripes that scroll left → right in an
+   * infinite loop, overlaid on a running progress bar's fill so it reads as
+   * actively moving / fast. The 0.6rem square tile makes the 135° stripes
+   * thick-ish and forward-leaning ("/").
+   *
+   * The stripes live on a ::after overlay animated via `transform`, NOT on the
+   * fill's own background-position: the fill repaints every tick as its width
+   * transitions, and a composited transform animation runs on its own GPU
+   * layer so it stays perfectly smooth and continuous regardless. The overlay
+   * sits one tile to the left and translates by exactly one tile, so the loop
+   * is seamless and never exposes an uncovered edge.
+   */
+  .bar-stripes {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar-stripes::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -0.6rem;
+    right: 0;
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.3) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0.3) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: 0.6rem 0.6rem;
+    animation: bar-stripes 0.45s linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes bar-stripes {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(0.6rem);
+    }
+  }
 }
