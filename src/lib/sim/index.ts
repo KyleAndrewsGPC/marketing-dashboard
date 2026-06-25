@@ -5,7 +5,9 @@ import { buildFeed } from "./feed.ts";
 import { DAILY_TARGETS, FIXED_SEED, PIPELINE_STAGES } from "./content.ts";
 import type {
   DataPipeline,
+  FloorStatus,
   Kpis,
+  ProductionLine,
   Snapshot,
   ThroughputBar,
   TickerStat,
@@ -109,8 +111,11 @@ export function snapshot(now: number): Snapshot {
     totalProcessedToday: dataCum,
   };
 
+  // ---- Floor health, derived from live line states ----
+  const floorStatus = deriveFloorStatus(lines, activeLines);
+
   // ---- Week-to-date ticker ----
-  const ticker = buildTicker(ctx, kpis);
+  const ticker = buildTicker(ctx, kpis, floorStatus);
 
   return {
     now,
@@ -122,12 +127,31 @@ export function snapshot(now: number): Snapshot {
     pipeline,
     feed: buildFeed(daySeed, now),
     ticker,
+    floorStatus,
   };
+}
+
+/**
+ * Summarize the floor for the header pill / ticker. Maintenance on any line
+ * surfaces first; an all-idle floor (overnight) reads as idle; otherwise the
+ * board is operational. Because it tracks the live line states, the headline
+ * shifts naturally through the day rather than sitting on one fixed string.
+ */
+function deriveFloorStatus(lines: ProductionLine[], activeLines: number): FloorStatus {
+  const maint = lines.filter((l) => l.status === "maintenance").length;
+  if (maint > 0) {
+    return { kind: "maintenance", label: `Maintenance · ${maint} line${maint > 1 ? "s" : ""}` };
+  }
+  if (activeLines === 0) {
+    return { kind: "idle", label: "Lines idle" };
+  }
+  return { kind: "ok", label: "All systems operational" };
 }
 
 function buildTicker(
   ctx: ReturnType<typeof dayContext>,
   todayKpis: Kpis,
+  floorStatus: FloorStatus,
 ): TickerStat[] {
   const { dayNumber, weekStart, dayStart } = ctx;
 
@@ -152,6 +176,6 @@ function buildTicker(
     { label: "WTD Data Records", value: fmt(wtd("dataRecords", todayKpis.dataRecords)) },
     { label: "WTD On-Time", value: `${onTimeAvg}%` },
     { label: "Lines Online", value: `${todayKpis.activeLines}/${todayKpis.totalLines}` },
-    { label: "Floor Status", value: "All systems operational" },
+    { label: "Floor Status", value: floorStatus.label },
   ];
 }

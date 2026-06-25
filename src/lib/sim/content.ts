@@ -20,6 +20,16 @@ export const CUSTOMERS: readonly string[] = [
   "Specialty Foods Co.",
   "Warehouse Club",
   "Electronics Retailer",
+  "Drug Store Chain",
+  "Discount Retailer",
+  "Beauty Retailer",
+  "Garden Center Co.",
+  "Furniture Outlet",
+  "Craft Supply Chain",
+  "Beverage Distributor",
+  "Apparel Retailer",
+  "Toy Store Group",
+  "Hardware Co-op",
 ];
 
 /** Generic program / job types. */
@@ -34,6 +44,36 @@ export const PROGRAMS: readonly string[] = [
   "POP Sign Set",
   "Rollback Program",
   "Holiday Feature",
+  "BOGO Event",
+  "Loyalty Offer",
+  "Back-to-School Set",
+  "Aisle Violator Run",
+  "Shelf Talker Batch",
+  "Price Change Cycle",
+  "Window Cling Set",
+  "Floor Graphic Run",
+  "Endcap Refresh",
+  "Weekly Ad Set",
+];
+
+/** Generic intake channels for ingest-related feed events. */
+export const INGEST_SOURCES: readonly string[] = [
+  "SFTP drop",
+  "API feed",
+  "Email intake",
+  "Web upload",
+  "EDI feed",
+  "Watch folder",
+];
+
+/** Generic substrate / stock names for material-related feed events. */
+export const SUBSTRATES: readonly string[] = [
+  "12pt C2S",
+  "14pt C1S",
+  "100# gloss text",
+  "synthetic stock",
+  "adhesive vinyl",
+  "10pt coated",
 ];
 
 export interface LineDef {

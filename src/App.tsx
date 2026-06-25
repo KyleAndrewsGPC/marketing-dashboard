@@ -19,7 +19,7 @@ const App: Component = () => {
 
   return (
     <div class="grid h-screen w-screen grid-rows-[auto_auto_1fr_auto] gap-3 overflow-hidden p-3">
-      <Header now={now} />
+      <Header now={now} snap={snap} />
       <KpiRow snap={snap} />
 
       <main class="grid min-h-0 grid-cols-[3fr_2fr] gap-3">

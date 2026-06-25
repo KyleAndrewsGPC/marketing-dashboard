@@ -82,6 +82,13 @@ export interface TickerStat {
   value: string;
 }
 
+/** Headline floor health, derived from the live line states. */
+export type FloorStatusKind = "ok" | "maintenance" | "idle";
+export interface FloorStatus {
+  kind: FloorStatusKind;
+  label: string;
+}
+
 export interface Snapshot {
   /** The timestamp this snapshot was derived from. */
   now: number;
@@ -94,4 +101,5 @@ export interface Snapshot {
   pipeline: DataPipeline;
   feed: FeedEvent[];
   ticker: TickerStat[];
+  floorStatus: FloorStatus;
 }
