@@ -46,7 +46,7 @@ function JobRow(props: { job: ClientJob }) {
 export function ActiveJobs(props: { snap: Accessor<Snapshot> }) {
   return (
     <Card
-      title="Active Client Jobs"
+      title="Active Jobs"
       accessory={
         <span class="text-[0.7rem] text-muted-foreground">
           {props.snap().kpis.activeJobs}/{props.snap().kpis.totalLanes} lanes running

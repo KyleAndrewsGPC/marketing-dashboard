@@ -19,7 +19,7 @@ export function KpiRow(props: { snap: Accessor<Snapshot> }) {
       { label: "Records", value: int(k.records), hint: "processed" },
       { label: "ESLs", value: int(k.esls), hint: "published" },
       { label: "Jobs Done", value: int(k.jobsDone), hint: "today" },
-      { label: "On-Time", value: `${k.onTimePct.toFixed(1)}%`, hint: "rolling", accent: true },
+      { label: "On-Time", value: `${k.onTimePct.toFixed(1)}%`, hint: "this week", accent: true },
     ];
   };
 
