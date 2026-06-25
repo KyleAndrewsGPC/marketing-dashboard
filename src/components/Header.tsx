@@ -11,11 +11,7 @@ export function Header(props: { now: Accessor<number> }) {
           <VelosMark class="h-5 w-7" />
         </div>
         <div>
-          <div class="flex items-center gap-2 text-[0.6rem] font-bold uppercase leading-none tracking-[0.32em]">
-            <span class="text-accent">Velos</span>
-            <span class="text-muted-foreground tracking-[0.18em]">Powered by GPC</span>
-          </div>
-          <h1 class="mt-1 text-lg font-semibold leading-tight tracking-tight">Mission Control</h1>
+          <h1 class="text-lg font-semibold leading-tight tracking-tight">Velos Mission Control</h1>
           <p class="text-xs text-muted-foreground">Live floor status · {weekLabel(props.now())}</p>
         </div>
       </div>

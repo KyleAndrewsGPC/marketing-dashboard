@@ -14,22 +14,22 @@
      * (#18191c); Teal Blue (#42b7e6) is the primary accent and Orange
      * (#f76423) is the energy/highlight accent.
      */
-    --background: 224 45% 6%; /* deep navy-charcoal */
-    --foreground: 0 0% 95%; /* brand Grey #f0f0f0 */
+    --background: 224 45% 5%; /* deep navy-charcoal */
+    --foreground: 0 0% 98%; /* brand Grey #f0f0f0 (brightened) */
 
     --card: 222 40% 9%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 0 0% 98%;
 
     --muted: 220 26% 16%;
-    --muted-foreground: 215 18% 62%;
+    --muted-foreground: 215 20% 70%;
 
-    --border: 220 28% 17%;
+    --border: 220 28% 22%;
     --accent: 197 77% 58%; /* Teal Blue #42b7e6 */
     --brand: 18 93% 55%; /* Orange #f76423   */
 
-    /* Status color language, mapped onto the brand palette. */
-    --running: 197 77% 58%; /* Teal Blue — operational/healthy */
-    --setup: 18 93% 55%; /* Orange — make-ready/attention   */
+    /* Status color language. Green is kept for "running" (universal good/healthy). */
+    --running: 142 71% 45%; /* green — operational/healthy   */
+    --setup: 18 93% 55%; /* Orange — make-ready/attention */
     --maintenance: 212 62% 52%; /* Medium Blue #245ea1 (lightened) */
     --idle: 215 12% 48%; /* muted grey-blue */
 
