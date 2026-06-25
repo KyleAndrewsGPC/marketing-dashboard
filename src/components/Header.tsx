@@ -1,21 +1,21 @@
 import type { Accessor } from "solid-js";
 import { clock, dateLabel, weekLabel } from "~/lib/format.ts";
+import { VelosMark } from "./ui.tsx";
 
-/** Generic title bar — no company identity. Live clock, date, week, status. */
+/** Velos-branded title bar. Logo mark, board name, live clock, date, week. */
 export function Header(props: { now: Accessor<number> }) {
   return (
     <header class="flex items-center justify-between rounded-lg border border-border bg-card px-5 py-3">
       <div class="flex items-center gap-4">
-        <div class="flex h-9 w-9 items-center justify-center rounded-md bg-accent/15 text-accent">
-          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-            <rect x="14" y="14" width="7" height="7" rx="1" />
-          </svg>
+        <div class="flex h-10 w-10 items-center justify-center rounded-md bg-background ring-1 ring-border">
+          <VelosMark class="h-5 w-7" />
         </div>
         <div>
-          <h1 class="text-lg font-semibold leading-tight tracking-tight">Mission Control</h1>
+          <div class="flex items-center gap-2 text-[0.6rem] font-bold uppercase leading-none tracking-[0.32em]">
+            <span class="text-accent">Velos</span>
+            <span class="text-muted-foreground tracking-[0.18em]">Powered by GPC</span>
+          </div>
+          <h1 class="mt-1 text-lg font-semibold leading-tight tracking-tight">Mission Control</h1>
           <p class="text-xs text-muted-foreground">Live floor status · {weekLabel(props.now())}</p>
         </div>
       </div>

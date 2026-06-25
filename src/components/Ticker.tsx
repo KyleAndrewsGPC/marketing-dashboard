@@ -6,7 +6,7 @@ export function Ticker(props: { snap: Accessor<Snapshot> }) {
   return (
     <footer class="flex items-center gap-6 overflow-hidden rounded-lg border border-border bg-card px-5 py-2.5">
       <div class="flex items-center gap-2 shrink-0">
-        <span class="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-running" />
+        <span class="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-brand" />
         <span class="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Week to date
         </span>

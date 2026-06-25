@@ -18,9 +18,12 @@ export default {
         setup: "hsl(var(--setup) / <alpha-value>)",
         maintenance: "hsl(var(--maintenance) / <alpha-value>)",
         idle: "hsl(var(--idle) / <alpha-value>)",
+        // Velos brand orange — the energy/highlight accent.
+        brand: "hsl(var(--brand) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Velos brand font is Nexa; Poppins is a self-hosted geometric stand-in.
+        sans: ["Poppins", "ui-sans-serif", "system-ui", "sans-serif"],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       borderRadius: {

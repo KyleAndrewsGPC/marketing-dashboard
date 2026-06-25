@@ -1,10 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
-  <g transform="translate(136 136)" fill="none" stroke="#3b82f6" stroke-width="22" stroke-linejoin="round">
-    <rect x="0" y="0" width="100" height="100" rx="14"/>
-    <rect x="140" y="0" width="100" height="100" rx="14"/>
-    <rect x="0" y="140" width="100" height="100" rx="14"/>
-    <rect x="140" y="140" width="100" height="100" rx="14"/>
+  <rect width="512" height="512" rx="96" fill="#080c16"/>
+  <!-- Velos "shelf" logo mark: three forward-angled bars (teal / orange / teal). -->
+  <g>
+    <polygon points="168,150 396,150 356,214 128,214" fill="#42b7e6"/>
+    <polygon points="168,224 396,224 356,288 128,288" fill="#f76423"/>
+    <polygon points="168,298 396,298 356,362 128,362" fill="#42b7e6"/>
   </g>
-  <circle cx="376" cy="376" r="34" fill="#22c55e"/>
 </svg>

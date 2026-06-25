@@ -8,23 +8,30 @@
    * `<alpha-value>` opacity modifiers work (e.g. bg-card/50).
    */
   :root {
-    --background: 0 0% 4%; /* near-black neutral */
-    --foreground: 0 0% 96%;
+    /*
+     * Velos brand palette (GPC Velos Brand Guide, Jan 2026), tuned for a dark
+     * kiosk. Backgrounds lean on the brand's Navy (#001641) / Charcoal
+     * (#18191c); Teal Blue (#42b7e6) is the primary accent and Orange
+     * (#f76423) is the energy/highlight accent.
+     */
+    --background: 224 45% 6%; /* deep navy-charcoal */
+    --foreground: 0 0% 95%; /* brand Grey #f0f0f0 */
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 96%;
+    --card: 222 40% 9%;
+    --card-foreground: 0 0% 95%;
 
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 56%;
+    --muted: 220 26% 16%;
+    --muted-foreground: 215 18% 62%;
 
-    --border: 0 0% 16%;
-    --accent: 217 91% 60%;
+    --border: 220 28% 17%;
+    --accent: 197 77% 58%; /* Teal Blue #42b7e6 */
+    --brand: 18 93% 55%; /* Orange #f76423   */
 
-    /* Status color language */
-    --running: 142 71% 45%; /* green  */
-    --setup: 38 92% 50%; /* amber  */
-    --maintenance: 217 91% 60%; /* blue   */
-    --idle: 0 0% 45%; /* muted  */
+    /* Status color language, mapped onto the brand palette. */
+    --running: 197 77% 58%; /* Teal Blue — operational/healthy */
+    --setup: 18 93% 55%; /* Orange — make-ready/attention   */
+    --maintenance: 212 62% 52%; /* Medium Blue #245ea1 (lightened) */
+    --idle: 215 12% 48%; /* muted grey-blue */
 
     --radius: 0.75rem;
   }

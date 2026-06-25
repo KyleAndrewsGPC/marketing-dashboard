@@ -51,6 +51,27 @@ export function statusLabel(status: LineStatus): string {
   }
 }
 
+/**
+ * The Velos logo mark: three forward-angled "shelf" bars. The slanted right
+ * edge reads as motion; the orange middle bar mirrors the brand's dual-color
+ * primary logo treatment.
+ */
+export function VelosMark(props: { class?: string }) {
+  // Right-leaning parallelograms in a 28×20 field.
+  const bar = (y: number) => {
+    const h = 4;
+    const s = 4;
+    return `${2 + s},${y} 26,${y} ${26 - s},${y + h} 2,${y + h}`;
+  };
+  return (
+    <svg viewBox="0 0 28 20" class={props.class} aria-label="Velos">
+      <polygon points={bar(2)} class="fill-accent" />
+      <polygon points={bar(8)} class="fill-brand" />
+      <polygon points={bar(14)} class="fill-accent" />
+    </svg>
+  );
+}
+
 /** A small status dot; pulses when the line is actively running. */
 export function StatusDot(props: { status: LineStatus | EventKind; pulse?: boolean }) {
   return (

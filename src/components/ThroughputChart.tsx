@@ -29,7 +29,7 @@ export function ThroughputChart(props: { snap: Accessor<Snapshot> }) {
                     bar.future
                       ? "bg-muted/40"
                       : bar.current
-                        ? "bg-accent"
+                        ? "bg-brand"
                         : "bg-accent/55"
                   }`}
                   style={{ height: bar.future ? "2%" : `${pct()}%` }}
