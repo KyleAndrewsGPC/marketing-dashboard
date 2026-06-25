@@ -103,7 +103,7 @@ export function Card(props: {
 }) {
   return (
     <section
-      class={`flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card ${
+      class={`glass-panel flex min-h-0 flex-col overflow-hidden rounded-lg ${
         props.class ?? ""
       }`}
     >

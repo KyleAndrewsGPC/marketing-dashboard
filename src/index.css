@@ -63,6 +63,113 @@
 }
 
 @layer components {
+  /*
+   * Full-bleed animated brand gradient. The Velos brand leans on big, bold
+   * orange↔teal gradients whose source points sweep around the frame while the
+   * warm/cool balance shifts back and forth. This covers the ENTIRE viewport:
+   *   - a static base linear gradient (orange → navy → teal) guarantees full
+   *     coverage at every frame,
+   *   - two oversized (200%) radial-mesh layers counter-rotate on top, so the
+   *     orange/teal source points sweep around the edges (composited
+   *     `transform` — smooth, off the main thread),
+   *   - the two layers breathe opacity in opposite phase, so the dominant hue —
+   *     the warm↔cool "ratio" — slides back and forth.
+   * The glass panels sit over this and frost it down to a legible tint.
+   */
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: linear-gradient(
+      120deg,
+      hsl(18 92% 34%) 0%,
+      hsl(12 78% 20%) 26%,
+      hsl(216 58% 12%) 50%,
+      hsl(204 70% 22%) 74%,
+      hsl(197 80% 38%) 100%
+    );
+    background-size: 200% 200%;
+    animation: aurora-pan 34s ease-in-out infinite;
+  }
+
+  .aurora::before,
+  .aurora::after {
+    content: "";
+    position: absolute;
+    /* Oversized + centered so rotation never exposes an empty corner. */
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    will-change: transform, opacity;
+  }
+
+  /* Warm-dominant mesh. */
+  .aurora::before {
+    background:
+      radial-gradient(42% 42% at 28% 30%, hsl(var(--brand) / 0.95), transparent 62%),
+      radial-gradient(46% 46% at 74% 70%, hsl(var(--accent) / 0.8), transparent 64%);
+    animation: aurora-rotate 46s linear infinite, aurora-breathe-warm 19s ease-in-out infinite;
+  }
+
+  /* Cool-dominant mesh, counter-rotating and breathing in opposite phase. */
+  .aurora::after {
+    background:
+      radial-gradient(44% 44% at 72% 24%, hsl(var(--accent) / 0.95), transparent 62%),
+      radial-gradient(42% 42% at 24% 76%, hsl(var(--brand) / 0.8), transparent 62%);
+    animation: aurora-rotate-rev 58s linear infinite, aurora-breathe-cool 19s ease-in-out infinite;
+  }
+
+  @keyframes aurora-pan {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes aurora-rotate {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes aurora-rotate-rev {
+    to { transform: rotate(-360deg); }
+  }
+
+  /* Opposite-phase opacity so the warm↔cool ratio slides back and forth. */
+  @keyframes aurora-breathe-warm {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes aurora-breathe-cool {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+  }
+
+  /*
+   * Foggy "glass" panel surface. A translucent card tint with a backdrop blur
+   * so the animated aurora behind it diffuses through; a faint top inner
+   * highlight + soft drop shadow give it dimensional, frosted depth. Replaces
+   * the old opaque `border border-border bg-card` recipe on every panel.
+   */
+  .glass-panel {
+    /* Low tint so the bold gradient reads through; heavy blur frosts it and a
+       faint inner darkening keeps white text/data legible over bright spots. */
+    background:
+      linear-gradient(hsl(224 45% 6% / 0.34), hsl(224 45% 6% / 0.34)),
+      hsl(var(--card) / 0.16);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    box-shadow:
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.09),
+      0 10px 34px -12px hsl(224 60% 2% / 0.7);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aurora,
+    .aurora::before,
+    .aurora::after {
+      animation: none !important;
+    }
+  }
+
   /* A subtle pulsing dot used for "live" status indicators. */
   .pulse-dot {
     animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
