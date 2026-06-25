@@ -5,21 +5,27 @@ import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   base: "/marketing-dashboard/",
+
   resolve: {
     alias: {
       "~": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+
   plugins: [
     solid(),
+
     VitePWA({
       registerType: "autoUpdate",
+
       // The board must run fully offline on a kiosk display — precache everything.
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+
         // Single-page app: always fall back to the shell when offline.
-        navigateFallback: "index.html",
+        navigateFallback: "/marketing-dashboard/index.html",
       },
+
       manifest: {
         name: "Velos · Mission Control",
         short_name: "Mission Control",
@@ -28,7 +34,10 @@ export default defineConfig({
         background_color: "#080c16",
         display: "fullscreen",
         orientation: "landscape",
-        start_url: "/",
+
+        scope: "/marketing-dashboard/",
+        start_url: "/marketing-dashboard/",
+
         icons: [
           {
             src: "icon-192.png",
