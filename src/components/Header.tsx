@@ -28,7 +28,7 @@ export function Header(props: { now: Accessor<number>; snap: Accessor<Snapshot> 
         </div>
         <div>
           <h1 class="text-lg font-semibold leading-tight tracking-tight">Velos Mission Control</h1>
-          <p class="text-xs text-muted-foreground">Live floor status · {weekLabel(props.now())}</p>
+          <p class="text-xs text-muted-foreground">Live system status · {weekLabel(props.now())}</p>
         </div>
       </div>
 

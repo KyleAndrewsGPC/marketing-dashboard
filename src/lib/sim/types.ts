@@ -1,3 +1,5 @@
+import type { History } from "./history.ts";
+
 /** Status color language from the README. */
 export type LineStatus = "running" | "setup" | "maintenance" | "idle";
 
@@ -100,6 +102,7 @@ export interface Snapshot {
   /** Peak hourly value across the day's curve — for chart scaling. */
   throughputPeak: number;
   signCount: SignCount;
+  history: History;
   feed: FeedEvent[];
   ticker: TickerStat[];
   floorStatus: FloorStatus;

@@ -2,6 +2,7 @@ import { hashSeed, rng } from "./prng.ts";
 import { areaUpTo, BASE_CURVE, dayContext, shiftName } from "./time.ts";
 import { buildJobs } from "./jobs.ts";
 import { buildSignCount } from "./signcount.ts";
+import { buildHistory } from "./history.ts";
 import { buildFeed } from "./feed.ts";
 import { DAILY_TARGETS, FIXED_SEED } from "./content.ts";
 import type {
@@ -45,6 +46,9 @@ export function snapshot(now: number): Snapshot {
   // ---- Sign Count panel (authoritative source for "signs today") ----
   const signCount = buildSignCount(daySeed, areaFrac);
 
+  // ---- Week-over-week output history (last ~3 months) ----
+  const history = buildHistory(ctx.weekStart);
+
   // ---- Active client jobs across the processing lanes ----
   const jobs = buildJobs(daySeed, dayStart, now);
   const activeJobs = jobs.filter((j) => j.status === "running").length;
@@ -64,10 +68,15 @@ export function snapshot(now: number): Snapshot {
     totalLanes: jobs.length,
   };
 
-  // ---- Throughput-by-hour (signs), with projected full-day bars ----
-  const signsTarget = DAILY_TARGETS.signs * dayFactor(dayNumber, "signs");
+  // ---- Throughput-by-hour (signs & strips), with projected full-day bars ----
+  // Strips ride the same diurnal curve as signs, so the combined target just
+  // scales the shape; the bars stay visually identical but the headline total
+  // honestly reflects both lines.
+  const throughputTarget =
+    DAILY_TARGETS.signs * dayFactor(dayNumber, "signs") +
+    DAILY_TARGETS.strips * dayFactor(dayNumber, "strips");
   const perHourProjected = (h: number) =>
-    (signsTarget * (areaUpTo(weights, h + 1) - areaUpTo(weights, h))) / fullArea;
+    (throughputTarget * (areaUpTo(weights, h + 1) - areaUpTo(weights, h))) / fullArea;
 
   const throughput: ThroughputBar[] = [];
   let throughputPeak = 0;
@@ -77,7 +86,7 @@ export function snapshot(now: number): Snapshot {
     throughputPeak = Math.max(throughputPeak, projected);
     const upper = Math.min(h + 1, hoursElapsed);
     const actual =
-      upper > h ? (signsTarget * (areaUpTo(weights, upper) - areaUpTo(weights, h))) / fullArea : 0;
+      upper > h ? (throughputTarget * (areaUpTo(weights, upper) - areaUpTo(weights, h))) / fullArea : 0;
     throughput.push({
       hour: h,
       value: Math.round(actual),
@@ -100,6 +109,7 @@ export function snapshot(now: number): Snapshot {
     throughput,
     throughputPeak,
     signCount,
+    history,
     feed: buildFeed(daySeed, now),
     ticker,
     floorStatus,

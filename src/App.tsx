@@ -5,6 +5,7 @@ import { Header } from "~/components/Header.tsx";
 import { KpiRow } from "~/components/KpiRow.tsx";
 import { ActiveJobs } from "~/components/ActiveJobs.tsx";
 import { ThroughputChart } from "~/components/ThroughputChart.tsx";
+import { HistoryChart } from "~/components/HistoryChart.tsx";
 import { SignCount } from "~/components/SignCount.tsx";
 import { ActivityFeed } from "~/components/ActivityFeed.tsx";
 import { Ticker } from "~/components/Ticker.tsx";
@@ -23,10 +24,13 @@ const App: Component = () => {
       <KpiRow snap={snap} />
 
       <main class="grid min-h-0 grid-cols-[3fr_2fr] gap-3">
-        {/* Left: active client jobs over throughput chart */}
+        {/* Left: active client jobs over the split throughput / history charts */}
         <div class="grid min-h-0 grid-rows-[1fr_minmax(0,38%)] gap-3">
           <ActiveJobs snap={snap} />
-          <ThroughputChart snap={snap} />
+          <div class="grid min-h-0 grid-cols-2 gap-3">
+            <ThroughputChart snap={snap} />
+            <HistoryChart snap={snap} />
+          </div>
         </div>
 
         {/* Right: sign count over activity feed */}
