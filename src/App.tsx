@@ -19,8 +19,12 @@ const App: Component = () => {
   const snap = createMemo(() => snapshot(now()));
 
   return (
-    <div class="grid h-screen w-screen grid-rows-[auto_auto_1fr_auto] gap-3 overflow-hidden p-3">
-      <Header now={now} snap={snap} />
+    <>
+      {/* Full-bleed animated orange↔teal brand gradient behind the glass panels. */}
+      <div class="aurora" aria-hidden="true" />
+
+      <div class="grid h-screen w-screen grid-rows-[auto_auto_1fr_auto] gap-3 overflow-hidden p-3">
+        <Header now={now} snap={snap} />
       <KpiRow snap={snap} />
 
       <main class="grid min-h-0 grid-cols-[3fr_2fr] gap-3">
@@ -40,8 +44,9 @@ const App: Component = () => {
         </div>
       </main>
 
-      <Ticker snap={snap} />
-    </div>
+        <Ticker snap={snap} />
+      </div>
+    </>
   );
 };
 

@@ -21,7 +21,7 @@ export function Header(props: { now: Accessor<number>; snap: Accessor<Snapshot> 
   const status = () => props.snap().floorStatus;
   const pill = () => PILL[status().kind];
   return (
-    <header class="flex items-center justify-between rounded-lg border border-border bg-card px-5 py-3">
+    <header class="glass-panel flex items-center justify-between rounded-lg px-5 py-3">
       <div class="flex items-center gap-4">
         <div class="flex h-10 w-10 items-center justify-center rounded-md bg-background ring-1 ring-border">
           <VelosMark class="h-5 w-7" />

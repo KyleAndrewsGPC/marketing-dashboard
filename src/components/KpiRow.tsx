@@ -27,7 +27,7 @@ export function KpiRow(props: { snap: Accessor<Snapshot> }) {
     <div class="grid grid-cols-6 gap-3">
       <For each={kpis()}>
         {(kpi) => (
-          <div class="flex flex-col justify-between rounded-lg border border-border bg-card px-4 py-3">
+          <div class="glass-panel flex flex-col justify-between rounded-lg px-4 py-3">
             <div class="text-[0.7rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">
               {kpi.label}
             </div>
